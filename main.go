@@ -3,24 +3,26 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
 	sourceFile string
 	//destFile    string
-	destDir     string
-	overwrite   bool
+	dest        string
+	force       bool
 	appendToEnd bool
 	help        bool
 )
 
 func init() {
 	flag.StringVar(&sourceFile, "src", "", "source file name")
-	flag.StringVar(&destDir, "outputDir", "", "destination file name, default is source file directory")
-	flag.BoolVar(&overwrite, "overwrite", false, "overwrite existing files, dangerous")
-	flag.BoolVar(&appendToEnd, "appendToEnd", true, "append to end of test file")
+	flag.StringVar(&dest, "o", "", "destination file name, default is source file like src_test.go")
+	flag.BoolVar(&force, "f", false, "force to generate, will force existing files, dangerous")
+	//flag.BoolVar(&appendToEnd, "appendToEnd", true, "append to end of test file")
 	flag.BoolVar(&help, "help", false, "show help")
 	flag.BoolVar(&help, "h", false, "show help")
 }
@@ -40,12 +42,12 @@ func main() {
 
 	checkSourceFile(sourceFile)
 
-	if destDir == "" {
-		destDir = filepath.Dir(sourceFile)
-		fmt.Println("使用源文件目录:", destDir)
+	if dest == "" {
+		dest = destFile(sourceFile)
 	}
+	fmt.Println("使用目标文件名:", dest)
 
-	err := processFile(sourceFile, destDir)
+	err := processFile(sourceFile, dest)
 	if err != nil {
 		fmt.Printf("处理错误：%v", err)
 	}
@@ -70,7 +72,21 @@ func checkSourceFile(sourceFile string) {
 	}
 }
 
-func processFile(inputFile, outputDir string) error {
+func destFile(destFile string) string {
+	absPath, err := filepath.Abs(sourceFile)
+	if err != nil {
+		log.Fatalf("Invalid file path: %v", err)
+	}
+
+	dir := filepath.Dir(absPath)
+	base := filepath.Base(absPath)
+
+	// 写入 _test.go 文件
+	testFileName := strings.TrimSuffix(base, ".go") + "_test.go"
+	return filepath.Join(dir, testFileName)
+}
+
+func processFile(inputFile, outputFile string) error {
 	structs, packageName, err := parseGoFile(inputFile)
 	if err != nil {
 		return err
@@ -80,5 +96,5 @@ func processFile(inputFile, outputDir string) error {
 		return fmt.Errorf("文件中未找到结构体定义")
 	}
 
-	return generateTestFiles(structs, packageName, outputDir)
+	return generateTestFiles(structs, packageName, outputFile)
 }

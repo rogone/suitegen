@@ -2,12 +2,12 @@ package main
 
 import (
 	_ "embed"
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -31,7 +31,7 @@ func processMethodInfo(method MethodInfo) MethodInfo {
 	return method
 }
 
-func generateTestFiles(structs []StructInfo, packageName, outputDir string) error {
+func generateTestFiles(structs []StructInfo, packageName, outputFile string) error {
 	tmpl, err := template.New("test").Parse(testTemplate)
 	if err != nil {
 		return fmt.Errorf("解析模板失败: %v", err)
@@ -43,9 +43,9 @@ func generateTestFiles(structs []StructInfo, packageName, outputDir string) erro
 			structInfo.Methods[i] = processMethodInfo(structInfo.Methods[i])
 		}
 
-		outputFile := filepath.Join(outputDir, fmt.Sprintf("%s_test.go", strings.ToLower(structInfo.Name)))
+		//outputFile := filepath.Join(outputDir, fmt.Sprintf("%s_test.go", strings.ToLower(structInfo.Name)))
 
-		if overwrite {
+		if force {
 			if err := createNewTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
 				return fmt.Errorf("创建测试文件失败: %v", err)
 			}
@@ -56,10 +56,13 @@ func generateTestFiles(structs []StructInfo, packageName, outputDir string) erro
 		// 检查文件是否存在
 		if _, err := os.Stat(outputFile); err == nil {
 			// 文件存在，执行增量更新
-			if err := updateExistingTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
-				return fmt.Errorf("更新现有测试文件失败: %v", err)
-			}
-			fmt.Printf("更新测试文件: %s\n", outputFile)
+			//if err := updateExistingTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
+			//	return fmt.Errorf("更新现有测试文件失败: %v", err)
+			//}
+			//fmt.Printf("更新测试文件: %s\n", outputFile)
+			fmt.Printf("文件: %s已存在\n", outputFile)
+			flag.Usage()
+			os.Exit(0)
 		} else {
 			// 文件不存在，创建新文件
 			if err := createNewTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
