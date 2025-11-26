@@ -4,7 +4,6 @@ import (
 	"testing"
 	"github.com/stretchr/testify/suite"
 )
-
 {{if .IsExported}}
 func Test{{.Name}}Suite(t *testing.T) {
 	suite.Run(t, new({{.Name}}TestSuite))
@@ -14,7 +13,6 @@ func Test_{{.Name}}Suite(t *testing.T) {
 	suite.Run(t, new({{.Name}}TestSuite))
 }
 {{end}}
-
 type {{.Name}}TestSuite struct {
 	suite.Suite
 	// 这里可以添加测试所需的字段
@@ -79,17 +77,19 @@ func (suite *{{.Name}}TestSuite) TearDownSuite() {
 {{range .Methods}}
 {{if .IsExported}}
 func (suite *{{$.Name}}TestSuite) Test{{.Name}}() {
-	// TODO: 实现 {{.Name}} 方法的测试用例
-	// 参数: {{.Params}}
-	// 返回值: {{.Results}}
-	suite.T().Logf("测试 {{.Name}} 方法")
-}
 {{else}}
 func (suite *{{$.Name}}TestSuite) Test_{{.Name}}() {
-	// TODO: 实现未导出的 {{.Name}} 方法的测试用例
+{{end}}
 	// 参数: {{.Params}}
 	// 返回值: {{.Results}}
-	suite.T().Logf("测试未导出的 {{.Name}} 方法")
-}
-{{end}}
-{{end}}
+
+    t := suite.T()
+    t.Logf("测试 {{.Name}} 方法")
+{{range .BranchHints}}
+    t.Run(`{{.FullStmt}}:{{.StartLine}}`, func(t *testing.T) {
+{{range .Branches}}
+        t.Run(`{{.Type}}:{{.Text}}`, func(t *testing.T) {
+            t.Skip("未实现")
+        }){{end}}
+    }){{end}}
+}{{end}}
