@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -43,7 +42,7 @@ func generateTestFiles(structs []StructInfo, packageName, outputFile string) err
 			structInfo.Methods[i] = processMethodInfo(structInfo.Methods[i])
 		}
 
-		//outputFile := filepath.Join(outputDir, fmt.Sprintf("%s_test.go", strings.ToLower(structInfo.Name)))
+		outputFile := fmt.Sprintf("%s_%s_test.go", outputFile, strings.ToLower(structInfo.Name))
 
 		if force {
 			if err := createNewTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
@@ -55,21 +54,15 @@ func generateTestFiles(structs []StructInfo, packageName, outputFile string) err
 
 		// 检查文件是否存在
 		if _, err := os.Stat(outputFile); err == nil {
-			// 文件存在，执行增量更新
-			//if err := updateExistingTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
-			//	return fmt.Errorf("更新现有测试文件失败: %v", err)
-			//}
-			//fmt.Printf("更新测试文件: %s\n", outputFile)
-			fmt.Printf("文件: %s已存在\n", outputFile)
-			flag.Usage()
-			os.Exit(0)
-		} else {
-			// 文件不存在，创建新文件
-			if err := createNewTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
-				return fmt.Errorf("创建测试文件失败: %v", err)
-			}
-			fmt.Printf("生成测试文件: %s\n", outputFile)
+			outputFile, _ = strings.CutSuffix(outputFile, "_test.go")
+			outputFile += "_new_test.go"
 		}
+
+		if err := createNewTestFile(outputFile, structInfo, packageName, tmpl); err != nil {
+			return fmt.Errorf("创建测试文件失败: %v", err)
+		}
+		fmt.Printf("生成测试文件: %s\n", outputFile)
+
 	}
 
 	return nil

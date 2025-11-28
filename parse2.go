@@ -28,7 +28,7 @@ func ExtractControlFlowGroupedByStatement(
 ) []ControlFlowStatement {
 	var results []ControlFlowStatement
 
-	if funcDecl.Body == nil {
+	if funcDecl.Body == nil || !branch {
 		return results
 	}
 
@@ -137,11 +137,11 @@ func extractIfStatement(
 						continue
 					}
 				}
-				branches = append(branches, Branch{Type: "else", Text: "else"})
+				branches = append(branches, Branch{Type: "else" /*, Text: "else"*/})
 				break
 			}
 		} else {
-			branches = append(branches, Branch{Type: "else", Text: "else"})
+			branches = append(branches, Branch{Type: "else" /*, Text: "else"*/})
 		}
 	}
 
@@ -174,7 +174,7 @@ func extractSwitchStatement(sw *ast.SwitchStmt, nodeToCode func(ast.Node) string
 	for _, cc := range sw.Body.List {
 		if cas, ok := cc.(*ast.CaseClause); ok {
 			if cas.List == nil {
-				branches = append(branches, Branch{Type: "default", Text: "default"})
+				branches = append(branches, Branch{Type: "default" /*, Text: "default"*/})
 			} else {
 				expr := strings.SplitN(nodeToCode(cas), ":", 2)[0]
 				expr = strings.TrimPrefix(strings.TrimSpace(expr), "case ")
@@ -206,7 +206,7 @@ func extractTypeSwitchStatement(tsw *ast.TypeSwitchStmt, nodeToCode func(ast.Nod
 	for _, cc := range tsw.Body.List {
 		if cas, ok := cc.(*ast.CaseClause); ok {
 			if cas.List == nil {
-				branches = append(branches, Branch{Type: "default", Text: "default"})
+				branches = append(branches, Branch{Type: "default" /*, Text: "default"*/})
 			} else {
 				expr := strings.SplitN(nodeToCode(cas), ":", 2)[0]
 				expr = strings.TrimPrefix(strings.TrimSpace(expr), "case ")
