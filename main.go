@@ -12,19 +12,22 @@ import (
 var (
 	sourceFile string
 	//destFile    string
-	dest        string
-	force       bool
-	appendToEnd bool
-	help        bool
+	dest  string
+	force bool
+	//appendToEnd bool
+	help   bool
+	branch bool
 )
 
 func init() {
 	flag.StringVar(&sourceFile, "src", "", "source file name")
-	flag.StringVar(&dest, "o", "", "destination file name, default is source file like src_test.go")
+	//flag.StringVar(&dest, "o", "", "destination file name, default is source file like src_test.go")
 	flag.BoolVar(&force, "f", false, "force to generate, will force existing files, dangerous")
 	//flag.BoolVar(&appendToEnd, "appendToEnd", true, "append to end of test file")
 	flag.BoolVar(&help, "help", false, "show help")
 	flag.BoolVar(&help, "h", false, "show help")
+	flag.BoolVar(&branch, "b", true, "generate branch tests")
+	flag.BoolVar(&branch, "branch", true, "generate branch tests")
 }
 
 func main() {
@@ -72,7 +75,7 @@ func checkSourceFile(sourceFile string) {
 	}
 }
 
-func destFile(destFile string) string {
+func destFile(sourceFile string) string {
 	absPath, err := filepath.Abs(sourceFile)
 	if err != nil {
 		log.Fatalf("Invalid file path: %v", err)
@@ -82,7 +85,7 @@ func destFile(destFile string) string {
 	base := filepath.Base(absPath)
 
 	// 写入 _test.go 文件
-	testFileName := strings.TrimSuffix(base, ".go") + "_test.go"
+	testFileName := strings.TrimSuffix(base, ".go") // + "_test.go"
 	return filepath.Join(dir, testFileName)
 }
 
